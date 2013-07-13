@@ -1,0 +1,61 @@
+extends layout
+
+block tophead
+  script(type='text/javascript', src='/javascripts/html2canvas.js')
+  script(type='text/javascript', src='/javascripts/jquery.js')
+  script(type='text/javascript', src="/socket.io/socket.io.js")
+
+block content
+  h1= title
+  h1#demo
+  p Welcome to #{title}
+  input#username
+  textarea#sometext(style="height: 400px; width: 400px;")
+
+  button#snapshot Snapshot!
+
+block bottomjs
+  script
+    var socket = io.connect('http://localhost:3000')
+      , iFrequency = 1000
+      , myInterval = 0
+      , username = prompt("What's your name?");
+    socket.emit("setusername", username);
+    $("#username").val(username);
+    function randomString(n) {
+      var text = "";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for( var i=0; i < n; i++ )
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+      return text;
+    }
+    function startLoop() {
+        if(myInterval > 0) clearInterval(myInterval);  // stop
+        myInterval = setInterval( "updateScreen()", iFrequency );  // run
+    }
+    function updateScreen() {
+      $("#sometext").val($("#sometext").val() + " " + randomString(10));
+      html2canvas(document.body, {
+        onrendered: function(canvas) {
+          var img = canvas.toDataURL("images/png");
+          socket.emit('screenshot', {user: $("#username").val(), img: img})
+        }
+      })
+    }
+    startLoop();
+    $("#snapshot").click(function(e) {
+      html2canvas(document.body, {
+        onrendered: function(canvas) {
+          var img = canvas.toDataURL("images/png");
+          socket.emit('screenshot', {user: $("#username").val(), img: img})
+          // document.body.appendChild(canvas);
+        }
+      })
+      return false;
+    });
+    var myVar=setInterval(function(){myTimer()},1000);
+    function myTimer() {
+      var d=new Date();
+      var t=d.toLocaleTimeString();
+      document.getElementById("demo").innerHTML=t;
+    }

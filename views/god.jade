@@ -1,0 +1,54 @@
+extends layout
+
+block tophead
+  script(type='text/javascript', src='/javascripts/html2canvas.js')
+  script(type='text/javascript', src='/javascripts/jquery.js')
+  script(type='text/javascript', src='/javascripts/bootstrap.min.js')
+  script(type='text/javascript', src="/socket.io/socket.io.js")
+  link(rel='stylesheet', type='text/css', href='/stylesheets/bootstrap.css')
+
+  title God Mode
+
+block content
+  h1 God Mode
+  h2#activeusers Active Users: #{n_users}
+  h2#nobserving Observing: 0
+  div.row
+    div.span12
+      ul#sessions.thumbnails
+
+
+block bottomjs
+  script
+    var socket = io.connect('http://localhost:3000')
+      , deleted = [];
+    socket.on('observe', function (data) {
+      if ($("#sessions").children().length >= 8) {
+        $("#nobserving").text("Observing: Can't observe any more users");
+      } else if ($.inArray(data.user, deleted) > 0) {
+        // do nothing
+      } else {
+        var id = data.user;
+        var html = "<li class='span3'><div class='thumbnail'><div id='" + data.user + "' class='caption'></div></div></li>";
+        var html = '<li class="span3"><div id="' + data.user + '" class="thumbnail">';
+        html += '<img alt="" src="' + data.img + '"><div class="caption"><a href=user/' + data.user + '><h4>' + data.user + '</h4></a>'
+        html += '<div class="social"><ul class="unstyled"><li><a id="remove-' + data.user + '" class="facebook" href=""><i class="glyphicons-facebook">remove</i></a></li>'
+        html += '</ul></div></div></div></li>'
+        if ($("#" + id).length==0) {
+          $("#sessions").append(html)
+        }
+        $("#" + id + " img").attr("src", data.img);
+        $("#" + "remove-" + data.user).click(function(e) {
+          $("#" + data.user).parent().remove();
+          deleted.push(data.user);
+          return false;
+        })
+      }
+      socket.on('usercount', function(n) {
+        $("#activeusers").text("Active Users: " + n);
+      })
+      socket.on('removeuser', function(username) {
+        $("#" + username).parent().parent().remove();
+      })
+
+    });

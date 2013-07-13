@@ -1,0 +1,27 @@
+extends layout
+
+block tophead
+  script(type='text/javascript', src='/javascripts/html2canvas.js')
+  script(type='text/javascript', src='/javascripts/jquery.js')
+  script(type='text/javascript', src="/socket.io/socket.io.js")
+
+block content
+  h1 Spy Mode
+  div#sessions
+
+block bottomjs
+  script
+    var socket = io.connect('http://localhost:3000')
+      , username = "#{username}";
+    socket.emit("subscribe", username);
+    socket.on('spy', function (data) {
+      var id = "session-" + data.user;
+      if ($("#" + id).length==0) {
+        $("#sessions").append("<div id='" + id + "'></div>")
+        $("#" + id).append("<h2>" + data.user + "</h2>")
+        var img = "<img border=1 style='max-height: 700px;' src='" + data.img + "'>";
+        $("#" + id).append(img)
+      }
+      $("#" + id + " img").attr("src", data.img);
+
+    });
