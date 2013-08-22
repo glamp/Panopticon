@@ -20,7 +20,7 @@ block content
 
 block bottomjs
   script
-    var socket = io.connect('http://localhost:5000')
+    var socket = io.connect('http://afternoon-cove-1401.herokuapp.com/')
       , deleted = [];
     socket.on('observe', function (data) {
       if ($("#sessions").children().length >= 8) {
