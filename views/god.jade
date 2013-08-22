@@ -20,7 +20,7 @@ block content
 
 block bottomjs
   script
-    var socket = io.connect('http://localhost:3000')
+    var socket = io.connect('http://localhost:5000')
       , deleted = [];
     socket.on('observe', function (data) {
       if ($("#sessions").children().length >= 8) {
